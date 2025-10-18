@@ -3,7 +3,7 @@ import { toRadians } from "../math_util";
 import { device, canvas, fovYDegrees, aspectRatio } from "../renderer";
 
 class CameraUniforms {
-    readonly buffer = new ArrayBuffer(16 * 4);
+    readonly buffer = new ArrayBuffer(16 * 4 + 16 * 4 + 16 * 4 + 16 * 4 + 4 * 4 + 4 + 4 + 4 + 4);
     private readonly floatView = new Float32Array(this.buffer);
 
     set viewProjMat(mat: Float32Array) {
@@ -12,6 +12,39 @@ class CameraUniforms {
     }
 
     // TODO-2: add extra functions to set values needed for light clustering here
+    set invViewProjMat(mat: Float32Array) {
+        this.floatView.set(mat.subarray(0, 16), 16);
+    }
+
+    set viewMat(mat: Float32Array) {
+        this.floatView.set(mat.subarray(0, 16), 32);
+    }
+
+    set invProjMat(mat: Float32Array) {
+        this.floatView.set(mat.subarray(0, 16), 48);
+    }
+
+    set cameraPos(pos: Vec3) {
+        this.floatView[64] = pos[0];
+        this.floatView[65] = pos[1];
+        this.floatView[66] = pos[2];
+    }
+
+    set nearPlane(near: number) {
+        this.floatView[67] = near;
+    }
+
+    set farPlane(far: number) {
+        this.floatView[68] = far;
+    }
+
+    set screenWidth(width: number) {
+        this.floatView[69] = width;
+    }
+
+    set screenHeight(height: number) {
+        this.floatView[70] = height;
+    }
 }
 
 export class Camera {
@@ -33,7 +66,7 @@ export class Camera {
 
     keys: { [key: string]: boolean } = {};
 
-    constructor () {
+    constructor() {
         // TODO-1.1: set `this.uniformsBuffer` to a new buffer of size `this.uniforms.buffer.byteLength`
         // ensure the usage is set to `GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST` since we will be copying to this buffer
         // check `lights.ts` for examples of using `device.createBuffer()`
@@ -140,6 +173,16 @@ export class Camera {
         this.uniforms.viewProjMat = viewProjMat;
 
         // TODO-2: write to extra buffers needed for light clustering here
+        const invViewProjMat = mat4.invert(viewProjMat);
+        const invProjMat = mat4.invert(this.projMat);
+        this.uniforms.invViewProjMat = invViewProjMat;
+        this.uniforms.viewMat = viewMat;
+        this.uniforms.invProjMat = invProjMat;
+        this.uniforms.cameraPos = this.cameraPos;
+        this.uniforms.nearPlane = Camera.nearPlane;
+        this.uniforms.farPlane = Camera.farPlane;
+        this.uniforms.screenWidth = canvas.width;
+        this.uniforms.screenHeight = canvas.height;
 
         // TODO-1.1: upload `this.uniforms.buffer` (host side) to `this.uniformsBuffer` (device side)
         // check `lights.ts` for examples of using `device.queue.writeBuffer()`
