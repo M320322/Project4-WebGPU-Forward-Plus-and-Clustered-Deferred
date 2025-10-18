@@ -9,22 +9,24 @@
 @group(${bindGroup_scene}) @binding(4) var gBufferNormal: texture_2d<f32>;
 @group(${bindGroup_scene}) @binding(5) var gBufferAlbedo: texture_2d<f32>;
 
-struct FragmentInput {
+struct FragmentInput
+{
     @builtin(position) fragCoord: vec4f,
     @location(0) uv: vec2f
 }
 
 @fragment
-fn main(in: FragmentInput) -> @location(0) vec4f {
+fn main(in: FragmentInput) -> @location(0) vec4f
+{
     let texCoord = vec2i(floor(in.fragCoord.xy));
-
+    
     let position = textureLoad(gBufferPosition, texCoord, 0).xyz;
     let normal = textureLoad(gBufferNormal, texCoord, 0).xyz;
     let albedo = textureLoad(gBufferAlbedo, texCoord, 0);
 
     let clusterX = u32(in.fragCoord.x / cameraUniforms.screenWidth * f32(${clusterWidth}));
     let clusterY = u32(in.fragCoord.y / cameraUniforms.screenHeight * f32(${clusterHeight}));
-
+    
     let viewPos = (cameraUniforms.viewMat * vec4f(position, 1.0)).xyz;
     let viewDepth = -viewPos.z;
     let near = cameraUniforms.nearPlane;

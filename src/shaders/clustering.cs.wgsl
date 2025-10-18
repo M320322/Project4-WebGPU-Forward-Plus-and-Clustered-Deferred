@@ -97,7 +97,7 @@ fn main(@builtin(global_invocation_id) globalId: vec3u) {
         let light = lightSet.lights[lightIdx];
         let lightPosView = (cameraUniforms.viewMat * vec4f(light.pos, 1.0)).xyz;
 
-        if sphereAABBIntersection(lightPosView, ${ lightRadius,}, minBounds, maxBounds) {
+        if (sphereAABBIntersection(lightPosView, ${lightRadius}, minBounds, maxBounds)) {
             clusterSet.clusters[clusterIndex].lightIndices[lightCount] = lightIdx;
             lightCount++;
         }

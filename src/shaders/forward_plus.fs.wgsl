@@ -22,7 +22,8 @@
 @group(${bindGroup_material}) @binding(0) var diffuseTex: texture_2d<f32>;
 @group(${bindGroup_material}) @binding(1) var diffuseTexSampler: sampler;
 
-struct FragmentInput {
+struct FragmentInput
+{
     @builtin(position) fragCoord: vec4f,
     @location(0) pos: vec3f,
     @location(1) nor: vec3f,
@@ -30,15 +31,16 @@ struct FragmentInput {
 }
 
 @fragment
-fn main(in: FragmentInput) -> @location(0) vec4f {
+fn main(in: FragmentInput) -> @location(0) vec4f
+{
     let diffuseColor = textureSample(diffuseTex, diffuseTexSampler, in.uv);
-    if diffuseColor.a < 0.5f {
+    if (diffuseColor.a < 0.5f) {
         discard;
     }
 
     let clusterX = u32(in.fragCoord.x / cameraUniforms.screenWidth * f32(${clusterWidth}));
     let clusterY = u32(in.fragCoord.y / cameraUniforms.screenHeight * f32(${clusterHeight}));
-
+    
     let viewPos = (cameraUniforms.viewMat * vec4f(in.pos, 1.0)).xyz;
     let viewDepth = -viewPos.z;
     let near = cameraUniforms.nearPlane;
